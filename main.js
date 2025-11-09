@@ -1,7 +1,7 @@
 import * as THREE from 'https://unpkg.com/three@0.168.0/build/three.module.js';
 import { GLTFLoader } from './GLTFLoader.js';
 
-const scene = new THREE.Schene();
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(2, 1.5, 3);
