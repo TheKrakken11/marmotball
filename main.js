@@ -37,9 +37,6 @@ loader.load('baseball_batter.glb', (gltf) => {
     }
   });
 
-  // Optional: scale up the model if it's tiny
-  model.scale.set(10, 10, 10);
-
   // Set up animation mixer for the top-level model
   if (gltf.animations.length) {
     mixer = new THREE.AnimationMixer(model);
