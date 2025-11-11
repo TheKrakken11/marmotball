@@ -24,24 +24,23 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
-
-  // Make sure all meshes are visible both sides (if normals flipped)
   model.traverse((child) => {
     if (child.isMesh) {
-      child.material.side = THREE.DoubleSide;
-      child.material.needsUpdate = true;
+      child.material.side = THREE.FrontSide;
+      child.castShadow = true;
+      child.receiveShadow = true;
     }
   });
-  const debugMat = new THREE.MeshStandardMaterial({ color: 0xff5533, side: THREE.DoubleSide });
-  model.traverse((child) => {
-    if (child.isMesh) {
-      child.material = debugMat;
-    }
-  });
-  // Try all animations, sometimes the second one is the swing
+  model.position.set(0, 0, 0);
+  model.scale.set(1, 1, 1);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  console.log('Animations:', gltf.animations.map(a => a.name));
+  console.log('Scene contents:', model);
+  const armature = model.getObjectByName('Armature.001') || model;
   if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(gltf.scene);
-    const action = mixer.clipAction(gltf.animations[1] || gltf.animations[0]);
+    mixer = new THREE.AnimationMixer(armature);
+    const clip = gltf.animations[1] || gltf.animations[0];
+    const action = mixer.clipAction(clip);
     action.play();
   }
 });
