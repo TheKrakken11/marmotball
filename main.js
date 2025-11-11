@@ -34,6 +34,11 @@ loader.load('baseball_batter.glb', (gltf) => {
       console.log('Found body:', child.name, child.position, child.scale);
     }
   });
+  model.traverse(0 => {
+    if (o.name.toLowerCase().includes('armature') || o.isSkinnedMesh) {
+      console.log(o.name, o.type, o.position, o.scale);
+    }
+  });
   model.rotation.set(0, 0, 0);
   scene.add(model);
   model.traverse((child) => {
