@@ -32,7 +32,12 @@ loader.load('baseball_batter.glb', (gltf) => {
       child.material.needsUpdate = true;
     }
   });
-
+  const debugMat = new THREE.MeshStandardMaterial({ color: 0xff5533, side: THREE.DoubleSide });
+  model.traverse((child) => {
+    if (child.isMesh) {
+      child.material = debugMat;
+    }
+  });
   // Try all animations, sometimes the second one is the swing
   if (gltf.animations.length) {
     mixer = new THREE.AnimationMixer(gltf.scene);
