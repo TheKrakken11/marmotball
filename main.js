@@ -4,7 +4,7 @@ import { GLTFLoader } from './GLTFLoader.js';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(2, 1.5, 3);
+camera.position.set(4, 3, 6);
 camera.lookAt(0, 1, 0);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -30,7 +30,7 @@ loader.load('baseball_batter.glb', (gltf) => {
       child.material.side = THREE.DoubleSide;
       child.material.needsUpdate = true;
     }
-    if (child.name.toLowerCase().includes('cylinder.001')) {
+    if (child.name.toLowerCase().includes('cylinder')) {
       console.log('Found body:', child.name, child.position, child.scale);
     }
   });
