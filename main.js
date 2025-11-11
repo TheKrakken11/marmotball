@@ -25,11 +25,20 @@ loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
 
-  if (gltf.animations && gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(gltf.scene);
-    const action = mixer.clipAction(gltf.animations[0]);
+  const armature = model.getObjectByName('Armature'); // try targeting the inner one
+  console.log('Found armature:', armature);
+
+  if (gltf.animations.length && armature) {
+    mixer = new THREE.AnimationMixer(armature);
+    const action = mixer.clipAction(gltf.animations[1] || gltf.animations[0]);
     action.play();
   }
+
+  model.traverse((o) => {
+    if (o.isMesh) {
+      o.material.side = THREE.DoubleSide; // temporary fix for inverted normals
+    }
+  });
 });
 
 const clock = new THREE.Clock();
