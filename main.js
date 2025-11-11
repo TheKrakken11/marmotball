@@ -23,6 +23,10 @@ let model;
 
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
+  console.log('Scene Graph:');
+  model.traverse(o => {
+    console.log(o.name, o.type, o.visible, o.material ? o.material.name : ' ');
+  });
   scene.add(model);
   model.traverse((child) => {
     if (child.isMesh) {
