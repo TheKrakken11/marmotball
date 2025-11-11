@@ -23,9 +23,11 @@ let model;
 
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
+
+  // Add model to scene
   scene.add(model);
 
-  // Make all meshes visible with proper sides
+  // Ensure all meshes are visible and double-sided
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
       child.visible = true;
@@ -35,29 +37,15 @@ loader.load('baseball_batter.glb', (gltf) => {
     }
   });
 
-  // Force update matrices
-  model.updateMatrixWorld(true);
-
-  // Set up the AnimationMixer using the skeleton root
-  let skeletonRoot = model.getObjectByName('Armature'); // exact name from Blender
-  if (!skeletonRoot) skeletonRoot = model;
-
-  if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(skeletonRoot);
-    const clip = gltf.animations[0]; // your swing animation
-    const action = mixer.clipAction(clip);
-    action.play();
-  }
-
-  // Force skinned meshes to apply skeleton pose
-  model.traverse((child) => {
-    if (child.isSkinnedMesh) {
-      child.skeleton.pose();
-    }
-  });
-
   // Optional: scale up the model if it's tiny
-  model.scale.set(10, 10, 10); 
+  model.scale.set(10, 10, 10);
+
+  // Set up animation mixer for the top-level model
+  if (gltf.animations.length) {
+    mixer = new THREE.AnimationMixer(model);
+    const clip = gltf.animations[0]; // your swing animation
+    mixer.clipAction(clip).play();
+  }
 });
 
 
