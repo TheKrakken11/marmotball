@@ -24,9 +24,17 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   console.log('Scene Graph:');
-  model.traverse(o => {
-    console.log(o.name, o.type, o.visible, o.material ? o.material.name : ' ');
+  model.traverse((child) => {
+    if (child.isSkinnedMesh || child.isMesh) {
+      child.visible = true;
+      child.material.side = THREE.DoubleSide;
+      child.material.needsUpdate = true;
+    }
+    if (child.name.toLowerCase().includes('cylinder.001')) {
+      console.log('Found body:', child.name, child.position, child.scale);
+    }
   });
+  model.rotation.set(0, 0, 0);
   scene.add(model);
   model.traverse((child) => {
     if (child.isMesh) {
