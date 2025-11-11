@@ -23,44 +23,29 @@ let model;
 
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
-  console.log('Scene Graph:');
+  scene.add(model);
+
+  // Make all meshes visible with proper sides
   model.traverse((child) => {
-    if (child.isSkinnedMesh || child.isMesh) {
+    if (child.isMesh || child.isSkinnedMesh) {
       child.visible = true;
       child.material.side = THREE.DoubleSide;
-      child.material.needsUpdate = true;
-    }
-    if (child.name.toLowerCase().includes('cylinder')) {
-      console.log('Found body:', child.name, child.position, child.scale);
-    }
-  });
-  model.traverse((o) => {
-    if (o.name.toLowerCase().includes('armature') || o.isSkinnedMesh) {
-      console.log(o.name, o.type, o.position, o.scale);
-    }
-  });
-  model.rotation.set(0, 0, 0);
-  scene.add(model);
-  model.traverse((child) => {
-    if (child.isMesh) {
-      child.material.side = THREE.FrontSide;
       child.castShadow = true;
       child.receiveShadow = true;
     }
   });
-  model.position.set(0, 0, 0);
-  model.scale.set(1, 1, 1);
+
+  // Add ambient for better visibility
   scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-  console.log('Animations:', gltf.animations.map(a => a.name));
-  console.log('Scene contents:', model);
-  const armature = model.getObjectByName('Armature.001') || model;
+
+  // Play first animation
   if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(armature);
-    const clip = gltf.animations[1] || gltf.animations[0];
-    const action = mixer.clipAction(clip);
+    mixer = new THREE.AnimationMixer(model);
+    const action = mixer.clipAction(gltf.animations[0]);
     action.play();
   }
 });
+
 
 const clock = new THREE.Clock();
 
