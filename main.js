@@ -36,6 +36,11 @@ loader.load('baseball_batter.glb', (gltf) => {
       child.receiveShadow = true;
     }
   });
+  model.traverse((child) => {
+    if (child.isSkinnedMesh) {
+      child.material = new THREE.MeshBasicMaterial({ color: 0xff5533, skinning: true });
+    }
+  });
 
   // Set up animation mixer for the top-level model
   if (gltf.animations.length) {
