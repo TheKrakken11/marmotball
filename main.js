@@ -24,8 +24,9 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
+
   if (gltf.animations && gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(model);
+    mixer = new THREE.AnimationMixer(gltf.scene);
     const action = mixer.clipAction(gltf.animations[0]);
     action.play();
   }
