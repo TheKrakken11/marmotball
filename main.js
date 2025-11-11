@@ -25,20 +25,20 @@ loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
 
-  const armature = model.getObjectByName('Armature'); // try targeting the inner one
-  console.log('Found armature:', armature);
+  // Make sure all meshes are visible both sides (if normals flipped)
+  model.traverse((child) => {
+    if (child.isMesh) {
+      child.material.side = THREE.DoubleSide;
+      child.material.needsUpdate = true;
+    }
+  });
 
-  if (gltf.animations.length && armature) {
-    mixer = new THREE.AnimationMixer(armature);
+  // Try all animations, sometimes the second one is the swing
+  if (gltf.animations.length) {
+    mixer = new THREE.AnimationMixer(gltf.scene);
     const action = mixer.clipAction(gltf.animations[1] || gltf.animations[0]);
     action.play();
   }
-
-  model.traverse((o) => {
-    if (o.isMesh) {
-      o.material.side = THREE.DoubleSide; // temporary fix for inverted normals
-    }
-  });
 });
 
 const clock = new THREE.Clock();
