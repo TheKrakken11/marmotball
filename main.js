@@ -35,15 +35,29 @@ loader.load('baseball_batter.glb', (gltf) => {
     }
   });
 
-  // Add ambient for better visibility
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  // Force update matrices
+  model.updateMatrixWorld(true);
 
-  // Play first animation
+  // Set up the AnimationMixer using the skeleton root
+  let skeletonRoot = model.getObjectByName('Armature'); // exact name from Blender
+  if (!skeletonRoot) skeletonRoot = model;
+
   if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(model);
-    const action = mixer.clipAction(gltf.animations[0]);
+    mixer = new THREE.AnimationMixer(skeletonRoot);
+    const clip = gltf.animations[0]; // your swing animation
+    const action = mixer.clipAction(clip);
     action.play();
   }
+
+  // Force skinned meshes to apply skeleton pose
+  model.traverse((child) => {
+    if (child.isSkinnedMesh) {
+      child.skeleton.pose();
+    }
+  });
+
+  // Optional: scale up the model if it's tiny
+  model.scale.set(10, 10, 10); 
 });
 
 
