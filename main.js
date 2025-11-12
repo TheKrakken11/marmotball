@@ -36,7 +36,8 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
-
+  const helper = new THREE.SkeletonHelper(model);
+  scene.add(helper);
   // Traverse all meshes
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
