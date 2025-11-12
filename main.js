@@ -1,80 +1,94 @@
 import * as THREE from 'https://unpkg.com/three@0.168.0/build/three.module.js';
 import { GLTFLoader } from './GLTFLoader.js';
 
+// ----------------------
+// Scene Setup
+// ----------------------
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
+
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(4, 3, 6);
 camera.lookAt(0, 1, 0);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+// Lights
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
 dirLight.position.set(3, 10, 10);
 scene.add(dirLight);
 
-const loader = new GLTFLoader();
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
+// ----------------------
+// Load glTF Model
+// ----------------------
+const loader = new GLTFLoader();
 let mixer;
 let model;
 
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
-
-  // Add the model to the scene
   scene.add(model);
 
-  // Ensure all meshes/skinned meshes are visible and have proper material settings
+  // Traverse all meshes
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
       child.visible = true;
       child.castShadow = true;
       child.receiveShadow = true;
+
+      // Ensure double-sided
+      child.material = child.material.clone();
       child.material.side = THREE.DoubleSide;
 
-      // If skinned, enable skinning in material
+      // Enable skinning if applicable
       if (child.isSkinnedMesh) {
-        child.material = child.material.clone();
         child.material.skinning = true;
-
-        // Make sure skeleton is in bind pose
         if (child.skeleton) child.skeleton.pose();
       }
     }
   });
 
-  // Add ambient light for better visibility
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  // Find armature for animation (fallback to model root)
+  const armature = model.getObjectByName('Armature001') || model;
 
-  // Set up animation mixer
-  if (gltf.animations.length) {
-    // Attempt to find the correct armature node that drives the SkinnedMesh
-    let armature = model.getObjectByName('Armature001') || model.getObjectByProperty('type', 'Bone') || model;
-
+  // Setup AnimationMixer
+  if (gltf.animations.length > 0) {
     mixer = new THREE.AnimationMixer(armature);
-
-    // Play the first animation clip
-    const clip = gltf.animations[0];
-    const action = mixer.clipAction(clip);
+    const action = mixer.clipAction(gltf.animations[0]);
     action.play();
   }
+
+}, undefined, (error) => {
+  console.error('Error loading glTF model:', error);
 });
 
-
+// ----------------------
+// Animation Loop
+// ----------------------
 const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
+
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
+
   renderer.render(scene, camera);
 }
 
 animate();
 
+// ----------------------
+// Handle Window Resize
+// ----------------------
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
