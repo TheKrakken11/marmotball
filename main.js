@@ -50,6 +50,20 @@ loader.load(
         child.material.side = THREE.DoubleSide;
       }
     });
+    model.traverse((child) => {
+      if (child.isSkinnedMesh) {
+        // Ensure it’s properly bound
+        if (!child.skeleton) {
+          console.warn('SkinnedMesh has no skeleton:', child);
+        } else {
+          child.bind(child.skeleton);
+        }
+        child.material.skinning = true;
+        child.material.side = THREE.DoubleSide;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
 
     // Animation
     if (gltf.animations.length) {
