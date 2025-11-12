@@ -24,10 +24,10 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
 
-  // Add model to the scene
+  // Add the model to the scene
   scene.add(model);
 
-  // Traverse and fix meshes
+  // Ensure all meshes/skinned meshes are visible and have proper material settings
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
       child.visible = true;
@@ -35,9 +35,13 @@ loader.load('baseball_batter.glb', (gltf) => {
       child.receiveShadow = true;
       child.material.side = THREE.DoubleSide;
 
-      // If SkinnedMesh, enable skinning
+      // If skinned, enable skinning in material
       if (child.isSkinnedMesh) {
+        child.material = child.material.clone();
         child.material.skinning = true;
+
+        // Make sure skeleton is in bind pose
+        if (child.skeleton) child.skeleton.pose();
       }
     }
   });
@@ -47,12 +51,12 @@ loader.load('baseball_batter.glb', (gltf) => {
 
   // Set up animation mixer
   if (gltf.animations.length) {
-    // Find the armature node if present
-    const armature = model.getObjectByName('Armature001') || model;
+    // Attempt to find the correct armature node that drives the SkinnedMesh
+    let armature = model.getObjectByName('Armature001') || model.getObjectByProperty('type', 'Bone') || model;
 
     mixer = new THREE.AnimationMixer(armature);
 
-    // Play first animation
+    // Play the first animation clip
     const clip = gltf.animations[0];
     const action = mixer.clipAction(clip);
     action.play();
