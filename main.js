@@ -48,7 +48,7 @@ loader.load('baseball_batter.glb', (gltf) => {
   // Set up animation mixer
   if (gltf.animations.length) {
     // Find the armature node if present
-    const armature = model.getObjectByName('Armature') || model;
+    const armature = model.getObjectByName('Armature001') || model;
 
     mixer = new THREE.AnimationMixer(armature);
 
