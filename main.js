@@ -33,46 +33,42 @@ const loader = new GLTFLoader();
 let mixer;
 let model;
 
-loader.load('baseball_batter.glb', (gltf) => {
-  model = gltf.scene;
-  scene.add(model);
+loader.load(
+  'baseball_batter.glb',
+  (gltf) => {
+    model = gltf.scene;
+    scene.add(model);
 
-  model.traverse((child) => {
-    if (child.isSkinnedMesh) {
-      child.material.skinning = true;       // REQUIRED
-      child.material.side = THREE.DoubleSide;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    } else if (child.isMesh) {
-      child.material.side = THREE.DoubleSide;
+    // Traverse meshes
+    model.traverse((child) => {
+      if (child.isSkinnedMesh) {
+        child.material.skinning = true;       // REQUIRED for SkinnedMesh
+        child.material.side = THREE.DoubleSide;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      } else if (child.isMesh) {
+        child.material.side = THREE.DoubleSide;
+      }
+    });
+
+    // Animation
+    if (gltf.animations.length) {
+      // Use the armature if it exists
+      const armature = model.getObjectByName('Armature001') || model;
+      mixer = new THREE.AnimationMixer(armature);
+      const action = mixer.clipAction(gltf.animations[0]);
+      action.play();
     }
-  });
 
-  // Animation
-  if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(model);
-    const action = mixer.clipAction(gltf.animations[0]);
-    action.play();
+    // Skeleton helper for debugging
+    const helper = new THREE.SkeletonHelper(model);
+    scene.add(helper);
+  },
+  undefined,
+  (error) => {
+    console.error('Error loading glTF model:', error);
   }
-
-  // Skeleton helper for debugging
-  const helper = new THREE.SkeletonHelper(model);
-  scene.add(helper);
-});
-
-  // Find armature for animation (fallback to model root)
-  const armature = model.getObjectByName('Armature001') || model;
-
-  // Setup AnimationMixer
-  if (gltf.animations.length > 0) {
-    mixer = new THREE.AnimationMixer(armature);
-    const action = mixer.clipAction(gltf.animations[0]);
-    action.play();
-  }
-
-}, undefined, (error) => {
-  console.error('Error loading glTF model:', error);
-});
+);
 
 // ----------------------
 // Animation Loop
