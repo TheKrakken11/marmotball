@@ -1,4 +1,4 @@
-import * as THREE from 'https://unpkg.com/three@0.168.0/build/three.module.js';
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { GLTFLoader } from './GLTFLoader.js';
 import { RoomEnvironment } from 'https://unpkg.com/three@0.168.0/examples/jsm/environments/RoomEnvironment.js';
 
@@ -17,7 +17,7 @@ document.body.appendChild(renderer.domElement);
 
 // Environment (soft IBL lighting)
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
-scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 1.0).texture;
 
 // ----------------------
 // Camera
