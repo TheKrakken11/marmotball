@@ -35,7 +35,7 @@ scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 1.0).texture
 // Camera
 // ----------------------
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(4, 3, 6);
+camera.position.set(0, 3, 6);
 camera.lookAt(0, 1, 0);
 
 // ----------------------
