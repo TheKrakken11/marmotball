@@ -10,7 +10,7 @@ scene.background = new THREE.Color(0x87ceeb)
 
 const geometry = new THREE.PlaneGeometry(2000, 2000);
 const material = new THREE.MeshStandardMaterial({
-  color: 0x388004,
+  color: 0x06402b,
   roughness: 1.0,
   metalness: 0.0,
 });
