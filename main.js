@@ -17,7 +17,7 @@ document.body.appendChild(renderer.domElement);
 
 // Environment (soft IBL lighting)
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
-scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
 // ----------------------
 // Camera
