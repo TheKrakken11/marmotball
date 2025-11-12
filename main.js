@@ -45,9 +45,6 @@ loader.load('baseball_batter.glb', (gltf) => {
       child.castShadow = true;
       child.receiveShadow = true;
 
-      // Ensure double-sided
-      child.material = child.material.clone();
-      child.material.side = THREE.DoubleSide;
 
       // Enable skinning if applicable
       if (child.isSkinnedMesh) {
