@@ -64,12 +64,12 @@ loader.load(
         child.receiveShadow = true;
       }
     });
-
+    model.scale.set(1, 1, 1);
+    model.updateMatrixWorld(true);
     // Animation
     if (gltf.animations.length) {
       // Use the armature if it exists
-      const armature = model.getObjectByName('Armature001') || model;
-      mixer = new THREE.AnimationMixer(armature);
+      mixer = new THREE.AnimationMixer(gltf.scene);
       const action = mixer.clipAction(gltf.animations[0]);
       action.play();
     }
