@@ -6,6 +6,18 @@ import { RoomEnvironment } from 'https://unpkg.com/three@0.168.0/examples/jsm/en
 // Scene + Renderer
 // ----------------------
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb)
+
+const geometry = new THREE.PlaneGeometry(2000, 2000);
+const material = new THREE.MeshStandardMaterial({
+  color: 0x3f9b0b,
+  roughness: 1.0,
+  metalness: 0.0,
+});
+const ground = new THREE.Mesh(geometry, material);
+ground.rotation.x = -Math.PI / 2;
+ground.position.set(0, 0, 0);
+scene.add(ground);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
