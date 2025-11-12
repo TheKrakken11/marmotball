@@ -54,11 +54,12 @@ scene.add(hemiLight);
 // ----------------------
 const loader = new GLTFLoader();
 let mixer;
+let model;
 
 loader.load(
   'baseball_batter.glb',
   (gltf) => {
-    const model = gltf.scene;
+    model = gltf.scene;
     scene.add(model);
 
     // Normalize scale and transforms
@@ -92,6 +93,21 @@ loader.load(
     console.error('Error loading baseball_batter.glb:', error);
   }
 );
+
+const batBone = model.getObjectByName('bat');
+const batLength = 1.235;
+const sphereGeo = new THREE.SphereGeometry(0.075, 16, 16);
+const sphereMat = new THREE.MeshStandardMaterial({
+  color: 0x0000ff,
+  transparent: true,
+  opacity: 0.4,
+  emissive: 0x0000ff,
+  emissiveIntensity: 0.3,
+});
+const batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
+
+batBone.add(batTipSphere);
+batTipSphere.position.set(0, batLength, 0);
 
 // ----------------------
 // Animation Loop
