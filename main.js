@@ -36,23 +36,29 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
   scene.add(model);
-  const helper = new THREE.SkeletonHelper(model);
-  scene.add(helper);
-  // Traverse all meshes
+
   model.traverse((child) => {
-    if (child.isMesh || child.isSkinnedMesh) {
-      child.visible = true;
+    if (child.isSkinnedMesh) {
+      child.material.skinning = true;       // REQUIRED
+      child.material.side = THREE.DoubleSide;
       child.castShadow = true;
       child.receiveShadow = true;
-
-
-      // Enable skinning if applicable
-      if (child.isSkinnedMesh) {
-        child.material.skinning = true;
-        if (child.skeleton) child.skeleton.pose();
-      }
+    } else if (child.isMesh) {
+      child.material.side = THREE.DoubleSide;
     }
   });
+
+  // Animation
+  if (gltf.animations.length) {
+    mixer = new THREE.AnimationMixer(model);
+    const action = mixer.clipAction(gltf.animations[0]);
+    action.play();
+  }
+
+  // Skeleton helper for debugging
+  const helper = new THREE.SkeletonHelper(model);
+  scene.add(helper);
+});
 
   // Find armature for animation (fallback to model root)
   const armature = model.getObjectByName('Armature001') || model;
