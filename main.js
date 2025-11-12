@@ -24,29 +24,38 @@ let model;
 loader.load('baseball_batter.glb', (gltf) => {
   model = gltf.scene;
 
-  // Add model to scene
+  // Add model to the scene
   scene.add(model);
 
-  // Ensure all meshes are visible and double-sided
+  // Traverse and fix meshes
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
       child.visible = true;
-      child.material.side = THREE.DoubleSide;
       child.castShadow = true;
       child.receiveShadow = true;
-    }
-  });
-  model.traverse((child) => {
-    if (child.isSkinnedMesh) {
-      child.material = new THREE.MeshBasicMaterial({ color: 0xff5533, skinning: true });
+      child.material.side = THREE.DoubleSide;
+
+      // If SkinnedMesh, enable skinning
+      if (child.isSkinnedMesh) {
+        child.material.skinning = true;
+      }
     }
   });
 
-  // Set up animation mixer for the top-level model
+  // Add ambient light for better visibility
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+  // Set up animation mixer
   if (gltf.animations.length) {
-    mixer = new THREE.AnimationMixer(model);
-    const clip = gltf.animations[0]; // your swing animation
-    mixer.clipAction(clip).play();
+    // Find the armature node if present
+    const armature = model.getObjectByName('Armature') || model;
+
+    mixer = new THREE.AnimationMixer(armature);
+
+    // Play first animation
+    const clip = gltf.animations[0];
+    const action = mixer.clipAction(clip);
+    action.play();
   }
 });
 
