@@ -42,7 +42,7 @@ loader.load(
     // Traverse meshes
     model.traverse((child) => {
       if (child.isSkinnedMesh) {
-        child.material.skinning = true;       // REQUIRED for SkinnedMesh
+        child.material.skinning = true; // REQUIRED
         child.material.side = THREE.DoubleSide;
         child.castShadow = true;
         child.receiveShadow = true;
