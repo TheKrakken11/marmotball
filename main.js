@@ -106,7 +106,6 @@ loader.load(
     batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
     batBone.add(batTipSphere);
     batTipSphere.position.set(0, batLength, 0);
-    animate();
   },
   undefined,
   (error) => {
@@ -137,11 +136,12 @@ function getPointerSpeed() {
 // ----------------------
 // Animation Loop
 // ----------------------
-const action = mixer.clipAction(model.animations[0]);
+let action
 const clock = new THREE.Clock();
 let mouseenter;
 function animate() {
   requestAnimationFrame(animate);
+  if (model && !action) action = mixer.clipAction(model.animations[0]);
   const delta = clock.getDelta();
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
     if (!mouseenter) {
@@ -158,6 +158,7 @@ function animate() {
   }
   renderer.render(scene, camera);
 }
+animate();
 
 // ----------------------
 // Resize Handling
