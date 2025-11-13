@@ -150,6 +150,7 @@ function animate() {
     if (mixer) {
       mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
       mixer.update(delta);
+    }
   } else {
     action.reset();
     mouseenter = false;
