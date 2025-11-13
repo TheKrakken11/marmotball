@@ -143,7 +143,7 @@ function animate() {
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
-    if (mixer) mixer.timeScale = THREE.MathUstils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
+    if (mixer) mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
   }
   renderer.render(scene, camera);
 }
