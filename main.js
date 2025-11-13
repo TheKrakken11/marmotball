@@ -52,9 +52,14 @@ scene.add(hemiLight);
 // ----------------------
 // Load Model
 // ----------------------
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 const loader = new GLTFLoader();
 let mixer;
 let model;
+let batTipSphere;
+const lastPointer = new THREE.Vector2();
+let lastTime = performance.now();
 
 loader.load(
   'baseball_batter.glb',
@@ -98,7 +103,7 @@ loader.load(
       emissive: 0x0000ff,
       emissiveIntensity: 0.3,
     });
-    const batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
+    batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
     batBone.add(batTipSphere);
     batTipSphere.position.set(0, batLength, 0);
   },
@@ -108,7 +113,22 @@ loader.load(
   }
 );
 
-
+// ----------------------
+// Other Code
+// ----------------------
+function onTouchMove(event) {
+  pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+  pointer.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
+}
+function getPointerSpeed() {
+  const now = performance.now();
+  const deltaTime = (now - lastTime) / 1000;
+  const distance = pointer.x - lastPointer.x;
+  const speed = distance / deltaTime;
+  lastPointer.copy(pointer);
+  lastTime = now;
+  return speed;
+}
 // ----------------------
 // Animation Loop
 // ----------------------
@@ -117,7 +137,11 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
-  if (mixer) mixer.update(delta);
+  if (mixer) {
+    mixer.timeScale = THREE.MathUstils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
+    mixer.update(delta);
+  if (pointer.x >= -0.25 && pointer.x <= 0.25) {
+    
   renderer.render(scene, camera);
 }
 
@@ -131,3 +155,6 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+
+window.addEventListener('touchmove', onTouchMove);
