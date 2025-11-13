@@ -60,6 +60,7 @@ let model;
 let batTipSphere;
 const lastPointer = new THREE.Vector2();
 let lastTime = performance.now();
+let mixer;
 
 loader.load(
   'baseball_batter.glb',
@@ -84,7 +85,7 @@ loader.load(
 
     // Animation setup (same as glTF viewer)
     if (gltf.animations && gltf.animations.length > 0) {
-      let mixer = new THREE.AnimationMixer(model);
+      mixer = new THREE.AnimationMixer(model);
       gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
     }
 
