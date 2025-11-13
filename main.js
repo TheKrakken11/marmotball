@@ -120,6 +120,10 @@ function onTouchMove(event) {
   pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
   pointer.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
 }
+function onPointerMove(event) {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = (event.clientY / window.innerHeight) * 2 + 1;
+}
 function getPointerSpeed() {
   const now = performance.now();
   const deltaTime = (now - lastTime) / 1000;
@@ -137,11 +141,10 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
-  if (mixer) {
-    mixer.timeScale = THREE.MathUstils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
-    mixer.update(delta);
+  if (mixer) mixer.update(delta);
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
-    
+    if (mixer) mixer.timeScale = THREE.MathUstils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
+  }
   renderer.render(scene, camera);
 }
 
@@ -156,5 +159,5 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-
+window.addEventListener('mousemove', onPointerMove);
 window.addEventListener('touchmove', onTouchMove);
