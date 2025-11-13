@@ -57,6 +57,7 @@ const pointer = new THREE.Vector2();
 const loader = new GLTFLoader();
 let mixer;
 let model;
+let action;
 let batTipSphere;
 const lastPointer = new THREE.Vector2();
 let lastTime = performance.now();
@@ -106,6 +107,8 @@ loader.load(
     batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
     batBone.add(batTipSphere);
     batTipSphere.position.set(0, batLength, 0);
+
+    action = mixer.clipAction(gltf.animations[0]);
   },
   undefined,
   (error) => {
@@ -136,12 +139,10 @@ function getPointerSpeed() {
 // ----------------------
 // Animation Loop
 // ----------------------
-let action
 const clock = new THREE.Clock();
 let mouseenter;
 function animate() {
   requestAnimationFrame(animate);
-  if (model && !action) action = mixer.clipAction(model.animations[0]);
   const delta = clock.getDelta();
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
     if (!mouseenter) {
