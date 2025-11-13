@@ -145,7 +145,7 @@ function animate() {
   const delta = clock.getDelta();
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
     if (!mouseenter) {
-      action.play();
+      if (action) action.play();
       mouseenter = true;
     }
     if (mixer) {
@@ -153,7 +153,7 @@ function animate() {
       mixer.update(delta);
     }
   } else {
-    action.reset();
+    if (action) action.reset();
     mouseenter = false;
   }
   renderer.render(scene, camera);
