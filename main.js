@@ -89,7 +89,7 @@ loader.load(
     scene.add(helper);
 
     const batBone = model.getObjectByName('bat');
-    const batLength = 1.1;
+    const batLength = 0.95;
     const sphereGeo = new THREE.SphereGeometry(0.075, 16, 16);
     const sphereMat = new THREE.MeshStandardMaterial({
       color: 0x0000ff,
