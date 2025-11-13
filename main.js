@@ -154,7 +154,7 @@ function animate() {
       mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
     }
   } else {
-    if (action) action.reset();
+    if (action && pointer.x > 0.25) action.reset();
     mouseenter = false;
   }
   renderer.render(scene, camera);
