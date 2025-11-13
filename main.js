@@ -84,7 +84,7 @@ loader.load(
 
     // Animation setup (same as glTF viewer)
     if (gltf.animations && gltf.animations.length > 0) {
-      mixer = new THREE.AnimationMixer(model);
+      let mixer = new THREE.AnimationMixer(model);
       gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
     }
 
