@@ -154,9 +154,12 @@ function animate() {
       mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
     }
   } else {
-    if (action) action.reset();
-    if (mixer) mixer.update(0);
+    if (action && action.time > 0) {
+      action.time = THREE.MathUtils.lerp(action.time, 0, delta * 4);
+      if (mixer) mixer.update(0);
+    }
     mouseenter = false;
+      
   }
   renderer.render(scene, camera);
 }
