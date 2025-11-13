@@ -60,7 +60,6 @@ let model;
 let batTipSphere;
 const lastPointer = new THREE.Vector2();
 let lastTime = performance.now();
-let mixer;
 
 loader.load(
   'baseball_batter.glb',
@@ -107,6 +106,7 @@ loader.load(
     batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
     batBone.add(batTipSphere);
     batTipSphere.position.set(0, batLength, 0);
+    animate();
   },
   undefined,
   (error) => {
@@ -158,8 +158,6 @@ function animate() {
   }
   renderer.render(scene, camera);
 }
-
-animate();
 
 // ----------------------
 // Resize Handling
