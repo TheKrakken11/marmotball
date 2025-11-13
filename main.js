@@ -155,7 +155,8 @@ function animate() {
     }
   } else {
     if (action) action.stop();
-    if (action && pointer.x > 0.25) action.reset();
+    if (action) action.reset();
+    if (mixer) mixer.update(0);
     mouseenter = false;
   }
   renderer.render(scene, camera);
