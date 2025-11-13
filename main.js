@@ -87,6 +87,20 @@ loader.load(
     const helper = new THREE.SkeletonHelper(model);
     helper.visible = false; // set to true if needed
     scene.add(helper);
+
+    const batBone = model.getObjectByName('bat');
+    const batLength = 1.235;
+    const sphereGeo = new THREE.SphereGeometry(0.075, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0x0000ff,
+      transparent: true,
+      opacity: 0.4,
+      emissive: 0x0000ff,
+      emissiveIntensity: 0.3,
+    });
+    const batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
+    batBone.add(batTipSphere);
+    batTipSphere.position.set(0, batLength, 0);
   },
   undefined,
   (error) => {
@@ -94,20 +108,6 @@ loader.load(
   }
 );
 
-const batBone = model.getObjectByName('bat');
-const batLength = 1.235;
-const sphereGeo = new THREE.SphereGeometry(0.075, 16, 16);
-const sphereMat = new THREE.MeshStandardMaterial({
-  color: 0x0000ff,
-  transparent: true,
-  opacity: 0.4,
-  emissive: 0x0000ff,
-  emissiveIntensity: 0.3,
-});
-const batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
-
-batBone.add(batTipSphere);
-batTipSphere.position.set(0, batLength, 0);
 
 // ----------------------
 // Animation Loop
