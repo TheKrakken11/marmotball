@@ -144,6 +144,7 @@ let mouseenter;
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+  if (mixer) mixer.update(delta);
   if (pointer.x >= -0.25 && pointer.x <= 0.25) {
     if (!mouseenter) {
       if (action) action.play();
@@ -151,7 +152,6 @@ function animate() {
     }
     if (mixer) {
       mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
-      mixer.update(delta);
     }
   } else {
     if (action) action.reset();
