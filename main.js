@@ -172,13 +172,13 @@ function animate() {
     const deltaY = pointer.y - lastPointerY;
     lastPointerY = pointer.y;
     // accumulate rotation
-    batRotation -= deltaY * batRotationSpeed;
+    batRotation = deltaY * batRotationSpeed;
     // optional: clamp rotation (e.g., from -45° to +30°)
     const minRot = THREE.MathUtils.degToRad(-45);
     const maxRot = THREE.MathUtils.degToRad(30);
     batRotation = THREE.MathUtils.clamp(batRotation, minRot, maxRot);
     // apply rotation (X axis for up/down)
-    batBone.rotation.x = batRotation;
+    batBone.rotation.x += batRotation;
   }
   renderer.render(scene, camera);
 }
