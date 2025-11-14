@@ -61,6 +61,9 @@ let action;
 let batTipSphere;
 const lastPointer = new THREE.Vector2();
 let lastTime = performance.now();
+let isInteracting = false;
+let pointerActive = false;
+
 
 loader.load(
   'baseball_batter.glb',
@@ -125,7 +128,7 @@ function onTouchMove(event) {
 }
 function onPointerMove(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = (event.clientY / window.innerHeight) * 2 + 1;
+  pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
 }
 function getPointerSpeed() {
   const now = performance.now();
@@ -145,18 +148,18 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
-  if (pointer.x >= -0.25 && pointer.x <= 0.25) {
-    if (!mouseenter) {
-      if (action) action.play();
-      mouseenter = true;
-    }
+  // Interaction based ONLY on touch/mouse down
+  if (isInteracting) {
     if (mixer) {
-      mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, getPointerSpeed() * 2, 0.2);
+      const speed = getPointerSpeed();
+      mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, speed * 2, 0.2);
     }
   } else {
-    if (action) action.reset();
+    // Reset animation when finger/mouse released
+    if (action) {
+      action.reset();
+    }
     if (mixer) mixer.update(0);
-    mouseenter = false;
   }
   renderer.render(scene, camera);
 }
@@ -171,5 +174,37 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// MOUSE
+window.addEventListener('mousedown', () => {
+  pointerActive = true;
+  isInteracting = true;
+  if (action) action.reset().play();
+});
+
+window.addEventListener('mouseup', () => {
+  pointerActive = false;
+  isInteracting = false;
+  if (action) {
+    action.reset();
+    mixer.update(0);
+  }
+});
+
+// TOUCH
+window.addEventListener('touchstart', (e) => {
+  pointerActive = true;
+  isInteracting = true;
+  onTouchMove(e);
+  if (action) action.reset().play();
+});
+
+window.addEventListener('touchend', () => {
+  pointerActive = false;
+  isInteracting = false;
+  if (action) {
+    action.reset();
+    mixer.update(0);
+  }
+});
 window.addEventListener('mousemove', onPointerMove);
 window.addEventListener('touchmove', onTouchMove);
