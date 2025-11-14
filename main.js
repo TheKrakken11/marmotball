@@ -112,6 +112,8 @@ loader.load(
     batTipSphere.position.set(0, batLength, 0);
 
     action = mixer.clipAction(gltf.animations[0]);
+    action.loop = THREE.LoopOnce;        // ← stop looping
+    action.clampWhenFinished = true;     // ← hold the last frame
   },
   undefined,
   (error) => {
