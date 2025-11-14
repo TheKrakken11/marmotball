@@ -63,6 +63,10 @@ const lastPointer = new THREE.Vector2();
 let lastTime = performance.now();
 let isInteracting = false;
 let pointerActive = false;
+let batBone;
+let batRotation = 0;          // accumulated rotation
+let lastPointerY = 0;         // previous pointer Y for delta calculation
+let batRotationSpeed = 1.2;   // sensitivity
 
 
 loader.load(
@@ -97,7 +101,7 @@ loader.load(
     helper.visible = false; // set to true if needed
     scene.add(helper);
 
-    const batBone = model.getObjectByName('bat');
+    batBone = model.getObjectByName('bat');
     const batLength = 0.95;
     const sphereGeo = new THREE.SphereGeometry(0.125, 16, 16);
     const sphereMat = new THREE.MeshStandardMaterial({
@@ -163,6 +167,19 @@ function animate() {
     }
     if (mixer) mixer.update(0);
   }
+  // Bat rotation from vertical pointer movement
+  if (isInteracting && batBone) {
+    const deltaY = pointer.y - lastPointerY;
+    lastPointerY = pointer.y;
+    // accumulate rotation
+    batRotation -= deltaY * batRotationSpeed;
+    // optional: clamp rotation (e.g., from -45° to +30°)
+    const minRot = THREE.MathUtils.degToRad(-45);
+    const maxRot = THREE.MathUtils.degToRad(30);
+    batRotation = THREE.MathUtils.clamp(batRotation, minRot, maxRot);
+    // apply rotation (X axis for up/down)
+    batBone.rotation.x = batRotation;
+  }
   renderer.render(scene, camera);
 }
 animate();
@@ -177,15 +194,17 @@ window.addEventListener('resize', () => {
 });
 
 // MOUSE
-window.addEventListener('mousedown', () => {
-  pointerActive = true;
+window.addEventListener('mousedown', (e) => {
   isInteracting = true;
+  lastPointerY = pointer.y;
   if (action) action.reset().play();
 });
 
 window.addEventListener('mouseup', () => {
   pointerActive = false;
   isInteracting = false;
+  batRotation = 0;
+  if (batBone) batBone.rotation.x = 0;
   if (action) {
     action.reset();
     mixer.update(0);
@@ -194,15 +213,17 @@ window.addEventListener('mouseup', () => {
 
 // TOUCH
 window.addEventListener('touchstart', (e) => {
-  pointerActive = true;
   isInteracting = true;
   onTouchMove(e);
+  lastPointerY = pointer.y;
   if (action) action.reset().play();
 });
 
 window.addEventListener('touchend', () => {
   pointerActive = false;
   isInteracting = false;
+  batRotation = 0;
+  if (batBone) batBone.rotation.x = 0;
   if (action) {
     action.reset();
     mixer.update(0);
