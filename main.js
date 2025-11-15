@@ -167,14 +167,16 @@ function animate() {
     }
     if (mixer) mixer.update(0);
   }
-  // Bat rotation from vertical pointer movement
+  let batOffset = 0;
   if (isInteracting && batBone) {
-    const deltaY = pointer.y - lastPointerY;
+    const dy = pointer.y - lastPointerY;
     lastPointerY = pointer.y;
-    // accumulate rotation
-    batRotation = deltaY * batRotationSpeed;
-    // apply rotation (X axis for up/down)
-    if (batRotation !== 0) batBone.rotation.x += batRotation;
+
+    batOffset = dy * 0.5; // sensitivity, not accumulated
+  }
+  // --- apply offset AFTER animation mixer updates ---
+  if (batBone) {
+    batBone.rotation.x += batOffset;
   }
   renderer.render(scene, camera);
 }
