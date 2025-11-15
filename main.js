@@ -67,6 +67,9 @@ let batBone;
 let batRotation = 0;          // accumulated rotation
 let lastPointerY = 0;         // previous pointer Y for delta calculation
 let batRotationSpeed = 1.2;   // sensitivity
+let pointerY = 0;
+let pointerDeltaY = 0;
+let lastPointerYEvent = 0;
 
 
 loader.load(
@@ -134,14 +137,19 @@ loader.load(
 // ----------------------
 // Other Code
 // ----------------------
-function onTouchMove(event) {
-  event.preventDefault();
-  pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-  pointer.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
+function onTouchMove(e) {
+    e.preventDefault();
+    const y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+    pointerDeltaY = y - lastPointerYEvent;
+    lastPointerYEvent = y;
+    pointerY = y;
 }
-function onPointerMove(event) {
-  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+function onPointerMove(e) {
+    const y = -(e.clientY / window.innerHeight) * 2 + 1;
+    pointerDeltaY = y - lastPointerYEvent;
+    lastPointerYEvent = y;
+    pointerY = y;
 }
 function rotateBatWorld(bone, delta) {
   const axis = new THREE.Vector3(1, 0, 0); // world X axis
@@ -181,10 +189,7 @@ function animate() {
   }
   // ----- Bat pointer → bone world rotation -----
   if (batBone && isInteracting) {
-    const dy = pointer.y - lastPointerY;
-    lastPointerY = pointer.y;
-    const sensitivity = 1.2;
-    rotateBatWorld(batBone, dy * sensitivity);
+    rotateBatWorld(batBone, pointerDeltaY * 1.2);
   }
   renderer.render(scene, camera);
 }
@@ -200,10 +205,10 @@ window.addEventListener('resize', () => {
 });
 
 // MOUSE
-window.addEventListener('mousedown', (e) => {
-  isInteracting = true;
-  lastPointerY = pointer.y;
-  if (action) action.reset().play();
+window.addEventListener('mousedown', e => {
+    isInteracting = true;
+    onPointerMove(e);
+    pointerDeltaY = 0;
 });
 
 window.addEventListener('mouseup', () => {
@@ -218,12 +223,10 @@ window.addEventListener('mouseup', () => {
 });
 
 // TOUCH
-window.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  isInteracting = true;
-  onTouchMove(e);
-  lastPointerY = pointer.y;
-  if (action) action.reset().play();
+window.addEventListener('touchstart', e => {
+    isInteracting = true;
+    onTouchMove(e);  
+    pointerDeltaY = 0;
 });
 
 window.addEventListener('touchend', (e) => {
