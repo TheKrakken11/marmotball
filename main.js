@@ -93,6 +93,12 @@ loader.load(
     // Animation setup (same as glTF viewer)
     if (gltf.animations && gltf.animations.length > 0) {
       mixer = new THREE.AnimationMixer(model);
+      // prevent animation from touching the bat bone
+      gltf.animations.forEach(clip => {
+        clip.tracks = clip.tracks.filter(track =>
+          !track.name.includes('bat')
+        );
+      });
       gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
     }
 
