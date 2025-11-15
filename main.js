@@ -162,7 +162,7 @@ function spawnBaseball(scene, position = new THREE.Vector3(0, 1, -5)) {
     baseball.position.copy(position);
 
     // Optional: give a custom property to track velocity
-    baseball.userData.velocity = new THREE.Vector3(-0.1, 0, 0); 
+    baseball.userData.velocity = new THREE.Vector3(0.1, 0, 0); 
 
     scene.add(baseball);
     return baseball;
