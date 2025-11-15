@@ -6,7 +6,7 @@ import { RoomEnvironment } from 'https://unpkg.com/three@0.168.0/examples/jsm/en
 // Scene + Renderer
 // ----------------------
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb)
+scene.background = new THREE.Color(0x87ceeb);
 
 const geometry = new THREE.PlaneGeometry(2000, 2000);
 const material = new THREE.MeshStandardMaterial({
@@ -16,7 +16,6 @@ const material = new THREE.MeshStandardMaterial({
 });
 const ground = new THREE.Mesh(geometry, material);
 ground.rotation.x = -Math.PI / 2;
-ground.position.set(0, 0, 0);
 scene.add(ground);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -27,7 +26,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
-// Environment (soft IBL lighting)
+// Environment
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 1.0).texture;
 
@@ -41,121 +40,105 @@ camera.lookAt(0, 1, 0);
 // ----------------------
 // Lighting
 // ----------------------
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-dirLight.position.set(5, 10, 7.5);
-scene.add(dirLight);
-
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
-hemiLight.position.set(0, 20, 0);
-scene.add(hemiLight);
+scene.add(new THREE.DirectionalLight(0xffffff, 2.0).position.set(5, 10, 7.5));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0).position.set(0, 20, 0));
 
 // ----------------------
 // Load Model
 // ----------------------
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
 const loader = new GLTFLoader();
-let mixer;
-let model;
-let action;
-let batTipSphere;
-const lastPointer = new THREE.Vector2();
-let lastTime = performance.now();
+
+let mixer, model, action, batBone, batTipSphere;
 let isInteracting = false;
-let pointerActive = false;
-let batBone;
-let batRotation = 0;          // accumulated rotation
-let lastPointerY = 0;         // previous pointer Y for delta calculation
-let batRotationSpeed = 1.2;   // sensitivity
-let pointerY = 0;
+
+let pointer = new THREE.Vector2();
 let pointerDeltaY = 0;
 let lastPointerYEvent = 0;
 
+let lastPointer = new THREE.Vector2();
+let lastTime = performance.now();
 
-loader.load(
-  'baseball_batter.glb',
-  (gltf) => {
-    model = gltf.scene;
-    scene.add(model);
+// ---------------
+// Load GLB
+// ---------------
+loader.load("baseball_batter.glb", (gltf) => {
+  model = gltf.scene;
+  scene.add(model);
 
-    // Normalize scale and transforms
-    model.scale.set(1, 1, 1);
-    model.position.set(0, 0, 0);
-    model.updateMatrixWorld(true);
+  model.traverse(c => {
+    if (c.isSkinnedMesh) c.frustumCulled = false;
+  });
 
-    // Optional: disable frustum culling for skinned meshes
-    model.traverse((child) => {
-      if (child.isSkinnedMesh) child.frustumCulled = false;
-    });
+  // Filter animation so it does NOT touch bat bone
+  gltf.animations.forEach((clip) => {
+    clip.tracks = clip.tracks.filter(
+      (track) => !track.name.toLowerCase().includes("bat")
+    );
+  });
 
-    // Center camera on model
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    camera.lookAt(center);
+  // Start animation
+  mixer = new THREE.AnimationMixer(model);
+  gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
 
-    // Animation setup (same as glTF viewer)
-    if (gltf.animations && gltf.animations.length > 0) {
-      mixer = new THREE.AnimationMixer(model);
-      // prevent animation from touching the bat bone
-      gltf.animations.forEach(clip => {
-        clip.tracks = clip.tracks.filter(track =>
-          !track.name.includes('bat')
-        );
-      });
-      gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-    }
+  // Skeleton helper (optional)
+  const helper = new THREE.SkeletonHelper(model);
+  helper.visible = false;
+  scene.add(helper);
 
-    // Debug helper (optional)
-    const helper = new THREE.SkeletonHelper(model);
-    helper.visible = false; // set to true if needed
-    scene.add(helper);
+  // FIND THE BAT BONE
+  batBone = model.getObjectByName("bat");
 
-    batBone = model.getObjectByName('bat');
-    const batLength = 0.95;
-    const sphereGeo = new THREE.SphereGeometry(0.125, 16, 16);
-    const sphereMat = new THREE.MeshStandardMaterial({
-      color: 0x0000ff,
-      transparent: true,
-      opacity: 0.4,
-      emissive: 0x0000ff,
-      emissiveIntensity: 0.3,
-    });
-    batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
-    batBone.add(batTipSphere);
-    batTipSphere.position.set(0, batLength, 0);
+  // Add small sphere at the end of the bat
+  const sphereGeo = new THREE.SphereGeometry(0.125, 16, 16);
+  const sphereMat = new THREE.MeshStandardMaterial({
+    color: 0x0000ff,
+    transparent: true,
+    opacity: 0.4,
+    emissive: 0x0000ff,
+    emissiveIntensity: 0.3,
+  });
 
-    action = mixer.clipAction(gltf.animations[0]);
-    action.loop = THREE.LoopOnce;        // ← stop looping
-    action.clampWhenFinished = true;     // ← hold the last frame
-  },
-  undefined,
-  (error) => {
-    console.error('Error loading baseball_batter.glb:', error);
-  }
-);
+  batTipSphere = new THREE.Mesh(sphereGeo, sphereMat);
+  batBone.add(batTipSphere);
+  batTipSphere.position.set(0, 0.95, 0);
+
+  action = mixer.clipAction(gltf.animations[0]);
+  action.loop = THREE.LoopOnce;
+  action.clampWhenFinished = true;
+});
 
 // ----------------------
-// Other Code
+// Pointer Events
 // ----------------------
-function onTouchMove(e) {
-    e.preventDefault();
-    const y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-    pointerDeltaY = y - lastPointerYEvent;
-    lastPointerYEvent = y;
-    pointerY = y;
-}
-
 function onPointerMove(e) {
-    const y = -(e.clientY / window.innerHeight) * 2 + 1;
-    pointerDeltaY = y - lastPointerYEvent;
-    lastPointerYEvent = y;
-    pointerY = y;
+  const yNorm = -(e.clientY / window.innerHeight) * 2 + 1;
+  pointerDeltaY = yNorm - lastPointerYEvent;
+  lastPointerYEvent = yNorm;
+
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = yNorm;
 }
+
+function onTouchMove(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  const yNorm = -(t.clientY / window.innerHeight) * 2 + 1;
+  pointerDeltaY = yNorm - lastPointerYEvent;
+  lastPointerYEvent = yNorm;
+
+  pointer.x = (t.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = yNorm;
+}
+
 function rotateBatWorld(bone, delta) {
-  const axis = new THREE.Vector3(1, 0, 0); // world X axis
+  const axis = new THREE.Vector3(1, 0, 0); // world-X axis
   const q = new THREE.Quaternion().setFromAxisAngle(axis, delta);
   bone.quaternion.premultiply(q);
 }
+
+// ----------------------
+// Pointer Speed (horizontal animation speed)
+// ----------------------
 function getPointerSpeed() {
   const now = performance.now();
   const deltaTime = (now - lastTime) / 1000;
@@ -165,80 +148,58 @@ function getPointerSpeed() {
   lastTime = now;
   return speed;
 }
+
 // ----------------------
 // Animation Loop
 // ----------------------
 const clock = new THREE.Clock();
-let mouseenter;
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+
   if (mixer) mixer.update(delta);
-  // Interaction based ONLY on touch/mouse down
-  if (isInteracting) {
-    if (mixer) {
-      const speed = getPointerSpeed();
-      mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, speed * 2, 0.2);
-    }
-  } else {
-    // Reset animation when finger/mouse released
-    if (action) {
-      action.reset();
-    }
-    if (mixer) mixer.update(0);
+
+  if (isInteracting && mixer) {
+    const speed = getPointerSpeed();
+    mixer.timeScale = THREE.MathUtils.lerp(mixer.timeScale, speed * 2, 0.2);
   }
-  // ----- Bat pointer → bone world rotation -----
+
+  // Apply bat rotation AFTER mixer to override animation
   if (batBone && isInteracting) {
     rotateBatWorld(batBone, pointerDeltaY * 1.2);
   }
+
   renderer.render(scene, camera);
 }
 animate();
 
 // ----------------------
-// Resize Handling
+// Window Events
 // ----------------------
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // MOUSE
-window.addEventListener('mousedown', e => {
-    isInteracting = true;
-    onPointerMove(e);
-    pointerDeltaY = 0;
+window.addEventListener("mousedown", (e) => {
+  isInteracting = true;
+  onPointerMove(e);
+  pointerDeltaY = 0;
 });
-
-window.addEventListener('mouseup', () => {
-  pointerActive = false;
+window.addEventListener("mousemove", onPointerMove);
+window.addEventListener("mouseup", () => {
   isInteracting = false;
-  batRotation = 0;
-  if (batBone) batBone.rotation.x = 0;
-  if (action) {
-    action.reset();
-    mixer.update(0);
-  }
 });
 
 // TOUCH
-window.addEventListener('touchstart', e => {
-    isInteracting = true;
-    onTouchMove(e);  
-    pointerDeltaY = 0;
+window.addEventListener("touchstart", (e) => {
+  isInteracting = true;
+  onTouchMove(e);
+  pointerDeltaY = 0;
 });
-
-window.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  pointerActive = false;
+window.addEventListener("touchmove", onTouchMove, { passive: false });
+window.addEventListener("touchend", () => {
   isInteracting = false;
-  batRotation = 0;
-  if (batBone) batBone.rotation.x = 0;
-  if (action) {
-    action.reset();
-    mixer.update(0);
-  }
 });
-window.addEventListener('mousemove', onPointerMove, { passive: false });
-window.addEventListener('touchmove', onTouchMove);
