@@ -137,6 +137,11 @@ function onPointerMove(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
 }
+function rotateBatWorld(bone, delta) {
+  const axis = new THREE.Vector3(1, 0, 0); // world X axis
+  const q = new THREE.Quaternion().setFromAxisAngle(axis, delta);
+  bone.quaternion.premultiply(q);
+}
 function getPointerSpeed() {
   const now = performance.now();
   const deltaTime = (now - lastTime) / 1000;
@@ -168,15 +173,12 @@ function animate() {
     }
     if (mixer) mixer.update(0);
   }
-  // ----- Bat pointer offset (non-accumulating) -----
+  // ----- Bat pointer → bone world rotation -----
   if (batBone && isInteracting) {
-    const dy = pointer.y - lastPointerY;  // change in pointer Y
+    const dy = pointer.y - lastPointerY;
     lastPointerY = pointer.y;
-
-    const batOffset = dy * 0.4;          // adjust sensitivity
-    const animatedX = batBone.rotation.x; // current animation rotation
-
-    batBone.rotation.x = animatedX + batOffset;
+    const sensitivity = 1.2;
+    rotateBatWorld(batBone, dy * sensitivity);
   }
   renderer.render(scene, camera);
 }
