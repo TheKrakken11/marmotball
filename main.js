@@ -107,7 +107,7 @@ loader.load(
     const sphereMat = new THREE.MeshStandardMaterial({
       color: 0x0000ff,
       transparent: true,
-      opacity: 0.4,
+      opacity: 1.0,
       emissive: 0x0000ff,
       emissiveIntensity: 0.3,
     });
