@@ -167,16 +167,15 @@ function animate() {
     }
     if (mixer) mixer.update(0);
   }
-  let batOffset = 0;
-  if (isInteracting && batBone) {
-    const dy = pointer.y - lastPointerY;
+  // ----- Bat pointer offset (non-accumulating) -----
+  if (batBone && isInteracting) {
+    const dy = pointer.y - lastPointerY;  // change in pointer Y
     lastPointerY = pointer.y;
 
-    batOffset = dy * 0.5; // sensitivity, not accumulated
-  }
-  // --- apply offset AFTER animation mixer updates ---
-  if (batBone) {
-    batBone.rotation.x += batOffset;
+    const batOffset = dy * 0.4;          // adjust sensitivity
+    const animatedX = batBone.rotation.x; // current animation rotation
+
+    batBone.rotation.x = animatedX + batOffset;
   }
   renderer.render(scene, camera);
 }
