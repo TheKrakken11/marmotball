@@ -129,6 +129,7 @@ loader.load(
 // Other Code
 // ----------------------
 function onTouchMove(event) {
+  event.preventDefault();
   pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
   pointer.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
 }
@@ -210,13 +211,15 @@ window.addEventListener('mouseup', () => {
 
 // TOUCH
 window.addEventListener('touchstart', (e) => {
+  e.preventDefault();
   isInteracting = true;
   onTouchMove(e);
   lastPointerY = pointer.y;
   if (action) action.reset().play();
 });
 
-window.addEventListener('touchend', () => {
+window.addEventListener('touchend', (e) => {
+  e.preventDefault();
   pointerActive = false;
   isInteracting = false;
   batRotation = 0;
@@ -226,5 +229,5 @@ window.addEventListener('touchend', () => {
     mixer.update(0);
   }
 });
-window.addEventListener('mousemove', onPointerMove);
+window.addEventListener('mousemove', onPointerMove, { passive: false });
 window.addEventListener('touchmove', onTouchMove);
