@@ -146,6 +146,26 @@ function getPointerSpeed() {
   lastTime = now;
   return speed;
 }
+function spawnBaseball(scene, position = new THREE.Vector3(0, 1, -5)) {
+    const radius = 0.0365; // 1 unit = 1 meter
+    const segments = 16;   // smooth enough for a small sphere
+    const geometry = new THREE.SphereGeometry(radius, segments, segments);
+
+    const material = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.5,
+        metalness: 0.1
+    });
+
+    const baseball = new THREE.Mesh(geometry, material);
+    baseball.position.copy(position);
+
+    // Optional: give a custom property to track velocity
+    baseball.userData.velocity = new THREE.Vector3(0.0025, 0, 0); 
+
+    scene.add(baseball);
+    return baseball;
+}
 // ----------------------
 // Animation Loop
 // ----------------------
