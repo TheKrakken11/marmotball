@@ -67,6 +67,7 @@ let batBone;
 let batRotation = 0;          // accumulated rotation
 let lastPointerY = 0;         // previous pointer Y for delta calculation
 let batRotationSpeed = 1.2;   // sensitivity
+let ball;
 
 
 loader.load(
@@ -166,6 +167,48 @@ function spawnBaseball(scene, position = new THREE.Vector3(0, 1, -5)) {
     scene.add(baseball);
     return baseball;
 }
+function disposeBaseball(baseball) {
+    if (!baseball) return;
+
+    // Remove from parent (scene)
+    if (baseball.parent) {
+        baseball.parent.remove(baseball);
+    }
+
+    // Dispose geometry
+    if (baseball.geometry) {
+        baseball.geometry.dispose();
+    }
+
+    // Dispose material(s)
+    if (baseball.material) {
+        if (Array.isArray(baseball.material)) {
+            baseball.material.forEach(mat => {
+                // Dispose any textures the material may have
+                for (const key in mat) {
+                    if (mat[key] && typeof mat[key].dispose === 'function') {
+                        mat[key].dispose();
+                    }
+                }
+                mat.dispose();
+            });
+        } else {
+            const mat = baseball.material;
+            for (const key in mat) {
+                if (mat[key] && typeof mat[key].dispose === 'function') {
+                    mat[key].dispose();
+                }
+            }
+            mat.dispose();
+        }
+    }
+
+    // Clear userData
+    baseball.userData = {};
+
+    // Remove any references to allow garbage collection
+    baseball = null;
+}
 // ----------------------
 // Animation Loop
 // ----------------------
@@ -198,6 +241,7 @@ function animate() {
 
     batBone.rotation.x = animatedX + batOffset;
   }
+  if (ball) ball.position.add(ball.userData.velocity.clone());
   renderer.render(scene, camera);
 }
 animate();
@@ -215,6 +259,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('mousedown', (e) => {
   isInteracting = true;
   lastPointerY = pointer.y;
+  ball = spawnBaseball(scene, position = new THREE.Vector3(5, 0.5, 0.25));
   if (action) action.reset().play();
 });
 
@@ -223,6 +268,7 @@ window.addEventListener('mouseup', () => {
   isInteracting = false;
   batRotation = 0;
   if (batBone) batBone.rotation.x = 0;
+  disposeBaseball(ball);
   if (action) {
     action.reset();
     mixer.update(0);
@@ -235,6 +281,7 @@ window.addEventListener('touchstart', (e) => {
   isInteracting = true;
   onTouchMove(e);
   lastPointerY = pointer.y;
+  ball = spawnBaseball(scene, position = new THREE.Vector3(5, 0.5, 0.25));
   if (action) action.reset().play();
 });
 
@@ -244,6 +291,7 @@ window.addEventListener('touchend', (e) => {
   isInteracting = false;
   batRotation = 0;
   if (batBone) batBone.rotation.x = 0;
+  disposeBaseball(ball);
   if (action) {
     action.reset();
     mixer.update(0);
