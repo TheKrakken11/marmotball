@@ -171,8 +171,8 @@ function disposeBaseball(baseball) {
     if (!baseball) return;
 
     // Remove from parent (scene)
-    if (baseball.parent) {
-        baseball.parent.remove(baseball);
+    if (scene) {
+        scene.remove(baseball);
     }
 
     // Dispose geometry
