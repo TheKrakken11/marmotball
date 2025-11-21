@@ -168,46 +168,25 @@ function spawnBaseball(scene, position = new THREE.Vector3(0, 1, -5)) {
     return baseball;
 }
 function disposeBaseball(baseball) {
-    if (!baseball) return;
+    if (!baseball) return null;
 
-    // Remove from parent (scene)
-    if (scene) {
-        scene.remove(baseball);
-    }
+    // Remove from scene
+    if (baseball.parent) baseball.parent.remove(baseball);
 
     // Dispose geometry
-    if (baseball.geometry) {
-        baseball.geometry.dispose();
-    }
+    baseball.geometry?.dispose();
 
     // Dispose material(s)
-    if (baseball.material) {
-        if (Array.isArray(baseball.material)) {
-            baseball.material.forEach(mat => {
-                // Dispose any textures the material may have
-                for (const key in mat) {
-                    if (mat[key] && typeof mat[key].dispose === 'function') {
-                        mat[key].dispose();
-                    }
-                }
-                mat.dispose();
-            });
-        } else {
-            const mat = baseball.material;
-            for (const key in mat) {
-                if (mat[key] && typeof mat[key].dispose === 'function') {
-                    mat[key].dispose();
-                }
-            }
-            mat.dispose();
-        }
+    if (Array.isArray(baseball.material)) {
+        baseball.material.forEach(mat => mat.dispose());
+    } else {
+        baseball.material?.dispose();
     }
 
     // Clear userData
     baseball.userData = {};
 
-    // Remove any references to allow garbage collection
-    baseball = null;
+    return null;
 }
 // ----------------------
 // Animation Loop
