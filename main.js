@@ -238,7 +238,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('mousedown', (e) => {
   isInteracting = true;
   lastPointerY = pointer.y;
-  ball = spawnBaseball(scene, new THREE.Vector3(0, 3, 8));
+  ball = spawnBaseball(scene, new THREE.Vector3(1, 1, 0));
   if (action) action.reset().play();
 });
 
@@ -260,7 +260,7 @@ window.addEventListener('touchstart', (e) => {
   isInteracting = true;
   onTouchMove(e);
   lastPointerY = pointer.y;
-  ball = spawnBaseball(scene, new THREE.Vector3(0, 3, 8));
+  ball = spawnBaseball(scene, new THREE.Vector3(1, 1, 0));
   if (action) action.reset().play();
 });
 
