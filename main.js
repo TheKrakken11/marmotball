@@ -188,6 +188,9 @@ function disposeBaseball(baseball) {
 
     return null;
 }
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
 // ----------------------
 // Animation Loop
 // ----------------------
@@ -238,7 +241,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('mousedown', (e) => {
   isInteracting = true;
   lastPointerY = pointer.y;
-  ball = spawnBaseball(scene, new THREE.Vector3(3, 1, 0.5));
+  ball = spawnBaseball(scene, new THREE.Vector3(3, rand(0.9, 1.2), 0.5));
   if (action) action.reset().play();
 });
 
@@ -260,7 +263,7 @@ window.addEventListener('touchstart', (e) => {
   isInteracting = true;
   onTouchMove(e);
   lastPointerY = pointer.y;
-  ball = spawnBaseball(scene, new THREE.Vector3(3, 1, 0.5));
+  ball = spawnBaseball(scene, new THREE.Vector3(3, rand(0.9, 1.2), 0.5));
   if (action) action.reset().play();
 });
 
