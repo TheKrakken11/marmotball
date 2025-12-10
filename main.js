@@ -223,7 +223,54 @@ function animate() {
 
     batBone.rotation.x = animatedX + batOffset;
   }
-  if (ball) ball.position.add(ball.userData.velocity.clone());
+  if (ball) {
+
+    const velocity = ball.userData.velocity.clone();
+    const speed = velocity.length();
+
+    if (speed > 0) {
+
+        const rayOrigin = ball.position.clone();
+        const rayDir = velocity.clone().normalize();
+
+        const ray = new THREE.Raycaster(
+            rayOrigin,
+            rayDir,
+            0,
+            speed // distance ball will travel this frame
+        );
+
+        // choose what you want to collide with:
+        // model, whole scene, or a collision group array
+        const hits = ray.intersectObject(scene, true);
+
+        if (hits.length > 0) {
+            const hit = hits[0];
+
+            // get normal
+            const normal = hit.face.normal.clone();
+            hit.object.localToWorld(normal);
+            normal.normalize();
+
+            // move ball to surface + radius
+            ball.position.copy(
+                hit.point.clone().add(normal.multiplyScalar(0.0365))
+            );
+
+            // reflect velocity
+            const v = ball.userData.velocity;
+            const dot = v.dot(normal);
+            v.sub(normal.multiplyScalar(2 * dot));
+
+            // optional boost
+            v.multiplyScalar(1.3);
+            v.y += 0.01;
+        }
+    }
+
+    // now move the ball after collision handling
+    ball.position.add(ball.userData.velocity.clone());
+  }
   renderer.render(scene, camera);
 }
 animate();
