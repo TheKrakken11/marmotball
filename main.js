@@ -225,51 +225,60 @@ function animate() {
   }
   if (ball) {
 
-    const velocity = ball.userData.velocity.clone();
+    const velocity = ball.userData.velocity;
     const speed = velocity.length();
 
-    if (speed > 0) {
-
-        const rayOrigin = ball.position.clone();
-        const rayDir = velocity.clone().normalize();
-
-        const ray = new THREE.Raycaster(
-            rayOrigin,
-            rayDir,
-            0,
-            speed // distance ball will travel this frame
-        );
-
-        // choose what you want to collide with:
-        // model, whole scene, or a collision group array
-        const hits = ray.intersectObject(scene, true);
-
-        if (hits.length > 0) {
-            const hit = hits[0];
-
-            // get normal
-            const normal = hit.face.normal.clone();
-            hit.object.localToWorld(normal);
-            normal.normalize();
-
-            // move ball to surface + radius
-            ball.position.copy(
-              hit.point.clone().add(normal.multiplyScalar(ballRadius + 0.001))
-            );
-            // reflect velocity
-            const v = ball.userData.velocity;
-            const dot = v.dot(normal);
-            v.sub(normal.multiplyScalar(2 * dot));
-
-            // optional boost
-            v.multiplyScalar(1.3);
-            v.y += 0.01;
-        }
+    // Avoid degenerate / zero-length rays
+    if (speed < 0.0001) {
+        return;
     }
 
-    // now move the ball after collision handling
-    ball.position.add(ball.userData.velocity.clone());
+    // Skip collision for a frame after hitting something
+    if (ignoreCollisionFrames > 0) {
+        ignoreCollisionFrames--;
+        ball.position.add(velocity);
+        return;
+    }
+
+    const rayOrigin = ball.position.clone();
+    const rayDir = velocity.clone().normalize();
+    const maxDistance = speed;
+
+    hitRay.set(rayOrigin, rayDir);
+
+    const hits = hitRay.intersectObject(scene, true);
+
+    if (hits.length > 0 && hits[0].distance <= maxDistance + ballRadius) {
+
+        const hit = hits[0];
+
+        // world normal
+        const normal = hit.face.normal.clone();
+        hit.object.localToWorld(normal).normalize();
+
+        // Reflect velocity
+        const v = ball.userData.velocity;
+        const dot = v.dot(normal);
+        v.sub(normal.clone().multiplyScalar(2 * dot));
+
+        // boost (optional)
+        v.multiplyScalar(1.3);
+        v.y += 0.01;
+
+        // PUSH OUTSIDE SURFACE plus epsilon
+        ball.position.copy(
+            hit.point.clone().add(normal.multiplyScalar(ballRadius + 0.001))
+        );
+
+        // Prevent re-collision next frame
+        ignoreCollisionFrames = 1;
+
+    } else {
+        // normal movement
+        ball.position.add(velocity);
+    }
   }
+  
   renderer.render(scene, camera);
 }
 animate();
