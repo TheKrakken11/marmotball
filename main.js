@@ -254,9 +254,8 @@ function animate() {
 
             // move ball to surface + radius
             ball.position.copy(
-                hit.point.clone().add(normal.multiplyScalar(0.0365))
+              hit.point.clone().add(normal.multiplyScalar(ballRadius + 0.001))
             );
-
             // reflect velocity
             const v = ball.userData.velocity;
             const dot = v.dot(normal);
